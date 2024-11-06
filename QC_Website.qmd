@@ -135,3 +135,12 @@ TheList <- c("3L", "4L", "5L", "CS")
 walk(.x=TheList, .f=QCBeadParse, MainFolder=MainFolder)
 ```
 
+
+```{r}
+TheList <- c("3L", "4L", "5L", "CS")
+# x <- "5L
+
+
+
+```
+

@@ -1,0 +1,133 @@
+
+
+```{r}
+#| message: FALSE
+
+library(lubridate)
+
+Computer <- file.path("C:", "Users", "12692", "Desktop")
+MainFolder <- file.path(Computer, "QC_Website")
+TheList <- c("3L", "4L", "5L", "CS")
+
+Updated <- source("QC_UpdateData.R")
+```
+
+
+```{r}
+CurrentData <- function(x, MainFolder, type){
+  ArchiveLocation <- file.path(MainFolder, x, "Archive")
+  
+  if (type == "MFI"){
+  BeadData <- list.files(ArchiveLocation, pattern="Bead",
+                         full.names=TRUE)
+  Data <- read.csv(BeadData, check.names=FALSE)
+  Data$DateTime <- lubridate::ymd_hms(Data$DateTime)
+  Data$DATE <- lubridate::ymd(Data$DATE)
+  Data$TIME <- lubridate::hms(Data$TIME)
+  }
+  
+  if (type == "Gain"){
+  ArchiveData <- list.files(ArchiveLocation, pattern="Archive",
+                         full.names=TRUE)
+  Data <- read.csv(ArchiveData, check.names=FALSE)
+  Data$DateTime <- lubridate::ymd_hms(Data$DateTime)
+  }
+  
+  Data <- Data %>% arrange(desc(DateTime))
+  return(Data)
+}
+```
+
+```{r}
+MFI_3L <- CurrentData(x="3L", MainFolder=MainFolder, type = "MFI")
+Gain_3L <- CurrentData(x="3L", MainFolder=MainFolder, type = "Gain")
+
+MFI_4L <- CurrentData(x="4L", MainFolder=MainFolder, type = "MFI")
+Gain_4L <- CurrentData(x="4L", MainFolder=MainFolder, type = "Gain")
+
+MFI_5L <- CurrentData(x="5L", MainFolder=MainFolder, type = "MFI")
+Gain_5L <- CurrentData(x="5L", MainFolder=MainFolder, type = "Gain")
+
+MFI_CS <- CurrentData(x="CS", MainFolder=MainFolder, type = "MFI")
+Gain_CS <- CurrentData(x="CS", MainFolder=MainFolder, type = "Gain")
+```
+
+# 3L
+```{r}
+TheColumns <- Gain_5L %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
+TheColumns <- setdiff(TheColumns, "TIME")
+```
+
+
+```{r}
+x <- Gain_3L
+#colnames(x)
+
+TheColumnNames <- TheColumns[str_detect(TheColumns, "Gain")]
+#UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
+VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
+BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
+#YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
+RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+VioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
+                      plotType = "individual", returntype = "plots")
+
+BluePlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
+                      plotType = "individual", returntype = "plots")
+
+RedPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+```
+
+```{r}
+x <- Gain_3L
+#colnames(x)
+
+TheColumnNames <- TheColumns[str_detect(TheColumns, "rCV")]
+#UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
+VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
+BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
+#YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
+RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+VioletPlotsRCV <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
+                      plotType = "individual", returntype = "plots")
+
+BluePlotsRCV <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
+                      plotType = "individual", returntype = "plots")
+
+RedPlotsRCV <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+```
+
+```{r}
+TheColumns <- MFI_3L %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
+TheColumns <- setdiff(TheColumns, "TIME")
+```
+
+```{r}
+x <- MFI_3L
+#colnames(x)
+
+TheIntermediate <- TheColumns[!str_detect(TheColumns, "Gain")]
+TheColumnNames <- TheIntermediate[str_detect(TheIntermediate, "-A")]
+  
+#UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
+VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
+BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
+#YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
+RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+VioletPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
+                      plotType = "individual", returntype = "plots")
+
+BluePlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
+                      plotType = "individual", returntype = "plots")
+
+RedPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+```
+
+
+
