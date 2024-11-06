@@ -1,0 +1,12 @@
+
+
+```{r}
+#| message: FALSE
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(stringr)
+
+library(Luciernaga)
+library(Coereba)
+```
