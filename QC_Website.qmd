@@ -16,11 +16,14 @@ Computer <- file.path("C:", "Users", "12692", "Desktop")
 MainFolder <- file.path(Computer, "QC_Website")
 list.files(MainFolder)
 ```
+
 ```{r}
 ActiveParse <- function(MainFolder, x){
 Folder <- file.path(MainFolder, x)
 LJTrackingFiles <- list.files(Folder, pattern="csv|CSV",
                               full.names = TRUE)
+
+if (!length(LJTrackingFiles)==0){
 
 if(length(LJTrackingFiles)==1){
 
@@ -31,7 +34,9 @@ TheArchive <- file.path(Folder, "Archive")
 ArchivedDataFile <- list.files(TheArchive, pattern="csv|CSV",
                               full.names = TRUE)
 
-if(length(ArchivedData)==1){
+if(!length(ArchivedDataFile)==0){
+
+if(length(ArchivedDataFile)==1){
 ArchivedData <- read.csv(ArchivedDataFile, check.names=FALSE)
 } else {message("Two csv files in the folder found!")}
 
@@ -48,11 +53,23 @@ if (!ncol(ArchivedData) == ncol(Parsed)){
 }
 
 file.remove(ArchivedDataFile)
+
+} else {UpdatedData <- Parsed
+}
+
 file.remove(LJTrackingFiles)
 
 name <- paste0("ArchiveData", x, ".csv")
 StorageLocation <- file.path(TheArchive, name)
 
 write.csv(UpdatedData, StorageLocation, row.names=FALSE)
+} else {message("No files to update with in ", x)}
+
 }
 ```
+
+```{r}
+TheList <- c("3L", "4L", "5L", "CS")
+walk(.x=TheList, MainFolder=MainFolder, .f=ActiveParse)
+```
+
