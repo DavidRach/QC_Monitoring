@@ -2,8 +2,9 @@
 
 ```{r}
 #| message: FALSE
-
+library(dplyr)
 library(lubridate)
+library(stringr)
 
 Computer <- file.path("C:", "Users", "12692", "Desktop")
 MainFolder <- file.path(Computer, "QC_Website")
@@ -58,7 +59,6 @@ TheColumns <- Gain_5L %>% select(where(~is.numeric(.)||is.integer(.))) %>% colna
 TheColumns <- setdiff(TheColumns, "TIME")
 ```
 
-
 ```{r}
 x <- Gain_3L
 #colnames(x)
@@ -107,7 +107,7 @@ TheColumns <- setdiff(TheColumns, "TIME")
 ```
 
 ```{r}
-x <- MFI_3L
+x <- MFI_3L %>% dplyr::filter(Timepoint %in% c("Before", "After"))
 #colnames(x)
 
 TheIntermediate <- TheColumns[!str_detect(TheColumns, "Gain")]
@@ -120,13 +120,20 @@ BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
 
 VioletPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
-                      plotType = "individual", returntype = "plots")
+                      plotType = "comparison", returntype = "plots",
+                      Metadata="Timepoint", strict = TRUE)
 
 BluePlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
-                      plotType = "individual", returntype = "plots")
+                      plotType = "comparison", returntype = "plots",
+                      Metadata="Timepoint", strict = TRUE)
 
 RedPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
-                     plotType = "individual", returntype = "plots")
+                     plotType = "comparison", returntype = "plots",
+                     Metadata="Timepoint", strict = TRUE)
+```
+
+```{r}
+print("Hello")
 ```
 
 
