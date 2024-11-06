@@ -10,3 +10,49 @@ library(stringr)
 library(Luciernaga)
 library(Coereba)
 ```
+
+```{r}
+Computer <- file.path("C:", "Users", "12692", "Desktop")
+MainFolder <- file.path(Computer, "QC_Website")
+list.files(MainFolder)
+```
+```{r}
+ActiveParse <- function(MainFolder, x){
+Folder <- file.path(MainFolder, x)
+LJTrackingFiles <- list.files(Folder, pattern="csv|CSV",
+                              full.names = TRUE)
+
+if(length(LJTrackingFiles)==1){
+
+Parsed <- QC_FilePrep(x=LJTrackingFiles, TrackChange=FALSE)
+} else {message("Two csv files in the folder found!")}
+
+TheArchive <- file.path(Folder, "Archive")
+ArchivedDataFile <- list.files(TheArchive, pattern="csv|CSV",
+                              full.names = TRUE)
+
+if(length(ArchivedData)==1){
+ArchivedData <- read.csv(ArchivedDataFile, check.names=FALSE)
+} else {message("Two csv files in the folder found!")}
+
+if (!ncol(ArchivedData) == ncol(Parsed)){
+  stop("The number of columns for the new data don't match
+       that of the archived data. Please make sure to 
+       export the Levy-Jennings trackings with all available
+       parameters")
+} else {
+
+ ArchivedData$DateTime <- ymd_hms(ArchivedData$DateTime)
+ NewData <- generics::setdiff(Parsed, ArchivedData)
+ UpdatedData <- rbind(NewData, ArchivedData)
+}
+
+file.remove(ArchivedDataFile)
+file.remove(LJTrackingFiles)
+
+name <- paste0("ArchiveData", x, ".csv")
+StorageLocation <- file.path(TheArchive, name)
+
+write.csv(UpdatedData, StorageLocation, row.names=FALSE)
+}
+```
