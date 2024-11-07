@@ -672,6 +672,20 @@ ggplotly(BluePlotsGain[[14]])
 ```
 
 ```{r}
+#| title: YellowGreen
+ggplotly(YellowGreenPlotsGain[[1]])
+ggplotly(YellowGreenPlotsGain[[2]])
+ggplotly(YellowGreenPlotsGain[[3]])
+ggplotly(YellowGreenPlotsGain[[4]])
+ggplotly(YellowGreenPlotsGain[[5]])
+ggplotly(YellowGreenPlotsGain[[6]])
+ggplotly(YellowGreenPlotsGain[[7]])
+ggplotly(YellowGreenPlotsGain[[8]])
+ggplotly(YellowGreenPlotsGain[[9]])
+ggplotly(YellowGreenPlotsGain[[10]])
+```
+
+```{r}
 #| title: Red
 ggplotly(RedPlotsGain[[1]])
 ggplotly(RedPlotsGain[[2]])
@@ -744,6 +758,20 @@ ggplotly(BluePlotsMFI[[11]])
 ggplotly(BluePlotsMFI[[12]])
 ggplotly(BluePlotsMFI[[13]])
 ggplotly(BluePlotsMFI[[14]])
+```
+
+```{r}
+#| title: YellowGreen
+ggplotly(YellowGreenPlotsMFI[[1]])
+ggplotly(YellowGreenPlotsMFI[[2]])
+ggplotly(YellowGreenPlotsMFI[[3]])
+ggplotly(YellowGreenPlotsMFI[[4]])
+ggplotly(YellowGreenPlotsMFI[[5]])
+ggplotly(YellowGreenPlotsMFI[[6]])
+ggplotly(YellowGreenPlotsMFI[[7]])
+ggplotly(YellowGreenPlotsMFI[[8]])
+ggplotly(YellowGreenPlotsMFI[[9]])
+ggplotly(YellowGreenPlotsMFI[[10]])
 ```
 
 ```{r}
@@ -921,6 +949,20 @@ ggplotly(BluePlotsGain[[14]])
 ```
 
 ```{r}
+#| title: YellowGreen
+ggplotly(YellowGreenPlotsGain[[1]])
+ggplotly(YellowGreenPlotsGain[[2]])
+ggplotly(YellowGreenPlotsGain[[3]])
+ggplotly(YellowGreenPlotsGain[[4]])
+ggplotly(YellowGreenPlotsGain[[5]])
+ggplotly(YellowGreenPlotsGain[[6]])
+ggplotly(YellowGreenPlotsGain[[7]])
+ggplotly(YellowGreenPlotsGain[[8]])
+ggplotly(YellowGreenPlotsGain[[9]])
+ggplotly(YellowGreenPlotsGain[[10]])
+```
+
+```{r}
 #| title: Red
 ggplotly(RedPlotsGain[[1]])
 ggplotly(RedPlotsGain[[2]])
@@ -993,6 +1035,20 @@ ggplotly(BluePlotsMFI[[11]])
 ggplotly(BluePlotsMFI[[12]])
 ggplotly(BluePlotsMFI[[13]])
 ggplotly(BluePlotsMFI[[14]])
+```
+
+```{r}
+#| title: YellowGreen
+ggplotly(YellowGreenPlotsMFI[[1]])
+ggplotly(YellowGreenPlotsMFI[[2]])
+ggplotly(YellowGreenPlotsMFI[[3]])
+ggplotly(YellowGreenPlotsMFI[[4]])
+ggplotly(YellowGreenPlotsMFI[[5]])
+ggplotly(YellowGreenPlotsMFI[[6]])
+ggplotly(YellowGreenPlotsMFI[[7]])
+ggplotly(YellowGreenPlotsMFI[[8]])
+ggplotly(YellowGreenPlotsMFI[[9]])
+ggplotly(YellowGreenPlotsMFI[[10]])
 ```
 
 ```{r}
