@@ -48,6 +48,25 @@ CurrentData <- function(x, MainFolder, type){
   Data <- Data %>% arrange(desc(DateTime))
   return(Data)
 }
+
+ColorPriority <- function(colors){
+  Ordered <- colors[order(grepl("^Ultra", colors) * -1,
+                          grepl("^UV", colors) * -1,
+                          grepl("^Violet", colors) * -1,
+                          grepl("^Blue", colors) * -1,
+                          grepl("^Yellow", colors) * -1,
+                          grepl("^Red", colors) * -1)]
+  return(Ordered)
+}
+
+ScalePriority <- function(colors){
+  Ordered <- colors[order(grepl("^FSC", colors) * -1,
+                          grepl("^SSC", colors) * -1,
+                          grepl("-A", colors) * -1,
+                          grepl("-H", colors) * -1,
+                          grepl("-W", colors) * -1)]
+  return(Ordered)
+}
 ```
 
 ```{r}
@@ -92,13 +111,20 @@ An initial example
 x <- Gain_3L
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
 TheColumnNames <- TheColumns[str_detect(TheColumns, "Gain")]
+
 #UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
 VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 #YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+ScatterGains <- TheColumnNames[str_detect(TheColumnNames, "SC-")]
+LaserGains <- TheColumns[str_detect(TheColumns, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheColumns[str_detect(TheColumns, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
 
 VioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
                       plotType = "individual", returntype = "plots")
@@ -107,6 +133,9 @@ BluePlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
                       plotType = "individual", returntype = "plots")
 
 RedPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+
+OtherPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "individual", returntype = "plots")
 ```
 
@@ -138,9 +167,6 @@ x <- MFI_3L
 x <- x %>% dplyr::filter(Timepoint %in% c("Before", "After"))
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
-#colnames(x)
-
 TheIntermediate <- TheColumns[!str_detect(TheColumns, "Gain")]
 TheColumnNames <- TheIntermediate[str_detect(TheIntermediate, "-A")]
   
@@ -149,6 +175,14 @@ VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 #YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+ScatterGains <- TheIntermediate[str_detect(TheIntermediate, "SC-")]
+ScatterGains <- ScalePriority(ScatterGains)
+LaserGains <- TheIntermediate[str_detect(TheIntermediate, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheIntermediate[str_detect(TheIntermediate, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
 
 VioletPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
                       plotType = "comparison", returntype = "plots",
@@ -161,7 +195,12 @@ BluePlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
 RedPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
                      plotType = "comparison", returntype = "plots",
                      Metadata="Timepoint", strict = TRUE)
+
+OtherPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
+                     plotType = "comparison", returntype = "plots",
+                     Metadata="Timepoint", strict = TRUE)
 ```
+
 
 ## Gain {.tabset}
 
@@ -215,8 +254,21 @@ ggplotly(RedPlotsGain[[7]])
 ggplotly(RedPlotsGain[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsGain[[1]])
+ggplotly(OtherPlotsGain[[2]])
+ggplotly(OtherPlotsGain[[3]])
+ggplotly(OtherPlotsGain[[4]])
+ggplotly(OtherPlotsGain[[5]])
+ggplotly(OtherPlotsGain[[6]])
+ggplotly(OtherPlotsGain[[7]])
+ggplotly(OtherPlotsGain[[8]])
+```
+
 ::: {.card title="Gain"}
 :::
+
 
 ## MFI {.tabset}
 
@@ -270,8 +322,26 @@ ggplotly(RedPlotsMFI[[7]])
 ggplotly(RedPlotsMFI[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsMFI[[1]])
+ggplotly(OtherPlotsMFI[[2]])
+ggplotly(OtherPlotsMFI[[3]])
+ggplotly(OtherPlotsMFI[[4]])
+ggplotly(OtherPlotsMFI[[5]])
+ggplotly(OtherPlotsMFI[[6]])
+ggplotly(OtherPlotsMFI[[7]])
+ggplotly(OtherPlotsMFI[[8]])
+ggplotly(OtherPlotsMFI[[9]])
+ggplotly(OtherPlotsMFI[[10]])
+ggplotly(OtherPlotsMFI[[11]])
+ggplotly(OtherPlotsMFI[[12]])
+```
+
+
 ::: {.card title="MFI"}
 :::
+
 
 # 4L
 
@@ -279,24 +349,34 @@ ggplotly(RedPlotsMFI[[8]])
 x <- Gain_4L
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
 TheColumnNames <- TheColumns[str_detect(TheColumns, "Gain")]
+
 UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
 VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 #YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
 
+ScatterGains <- TheColumnNames[str_detect(TheColumnNames, "SC-")]
+LaserGains <- TheColumns[str_detect(TheColumns, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheColumns[str_detect(TheColumns, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
+
 UltraVioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=UltraVioletGains,
                       plotType = "individual", returntype = "plots")
 
 VioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
-                      plotType = "individual", returntype = "plots")
+                      plotType = "individual", returntype = "plots", strict = TRUE)
 
 BluePlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
                       plotType = "individual", returntype = "plots")
 
 RedPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+
+OtherPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "individual", returntype = "plots")
 ```
 
@@ -331,9 +411,6 @@ x <- MFI_4L
 x <- x %>% dplyr::filter(Timepoint %in% c("Before", "After"))
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
-#colnames(x)
-
 TheIntermediate <- TheColumns[!str_detect(TheColumns, "Gain")]
 TheColumnNames <- TheIntermediate[str_detect(TheIntermediate, "-A")]
   
@@ -342,6 +419,14 @@ VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 #YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+ScatterGains <- TheIntermediate[str_detect(TheIntermediate, "SC-")]
+ScatterGains <- ScalePriority(ScatterGains)
+LaserGains <- TheIntermediate[str_detect(TheIntermediate, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheIntermediate[str_detect(TheIntermediate, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
 
 UltraVioletPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=UltraVioletGains,
                       plotType = "comparison", returntype = "plots",
@@ -356,6 +441,10 @@ BluePlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
                       Metadata="Timepoint", strict = TRUE)
 
 RedPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "comparison", returntype = "plots",
+                     Metadata="Timepoint", strict = TRUE)
+
+OtherPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "comparison", returntype = "plots",
                      Metadata="Timepoint", strict = TRUE)
 ```
@@ -433,6 +522,20 @@ ggplotly(RedPlotsGain[[7]])
 ggplotly(RedPlotsGain[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsGain[[1]])
+ggplotly(OtherPlotsGain[[2]])
+ggplotly(OtherPlotsGain[[3]])
+ggplotly(OtherPlotsGain[[4]])
+ggplotly(OtherPlotsGain[[5]])
+ggplotly(OtherPlotsGain[[6]])
+ggplotly(OtherPlotsGain[[7]])
+ggplotly(OtherPlotsGain[[8]])
+ggplotly(OtherPlotsGain[[9]])
+ggplotly(OtherPlotsGain[[10]])
+```
+
 ::: {.card title="Gain"}
 :::
 
@@ -508,6 +611,24 @@ ggplotly(RedPlotsMFI[[7]])
 ggplotly(RedPlotsMFI[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsMFI[[1]])
+ggplotly(OtherPlotsMFI[[2]])
+ggplotly(OtherPlotsMFI[[3]])
+ggplotly(OtherPlotsMFI[[4]])
+ggplotly(OtherPlotsMFI[[5]])
+ggplotly(OtherPlotsMFI[[6]])
+ggplotly(OtherPlotsMFI[[7]])
+ggplotly(OtherPlotsMFI[[8]]) 
+ggplotly(OtherPlotsMFI[[9]])
+ggplotly(OtherPlotsMFI[[10]])
+ggplotly(OtherPlotsMFI[[11]])
+ggplotly(OtherPlotsMFI[[12]])
+ggplotly(OtherPlotsMFI[[13]])
+ggplotly(OtherPlotsMFI[[14]])
+```
+
 ::: {.card title="MFI"}
 :::
 
@@ -519,19 +640,26 @@ ggplotly(RedPlotsMFI[[8]])
 x <- Gain_5L
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
 TheColumnNames <- TheColumns[str_detect(TheColumns, "Gain")]
+
 UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
 VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
 
+ScatterGains <- TheColumnNames[str_detect(TheColumnNames, "SC-")]
+LaserGains <- TheColumns[str_detect(TheColumns, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheColumns[str_detect(TheColumns, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
+
 UltraVioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=UltraVioletGains,
                       plotType = "individual", returntype = "plots")
 
 VioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
-                      plotType = "individual", returntype = "plots")
+                      plotType = "individual", returntype = "plots", strict = TRUE)
 
 BluePlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
                       plotType = "individual", returntype = "plots")
@@ -540,6 +668,9 @@ YellowGreenPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=YellowGre
                       plotType = "individual", returntype = "plots")
 
 RedPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+
+OtherPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "individual", returntype = "plots")
 ```
 
@@ -577,9 +708,6 @@ x <- MFI_5L
 x <- x %>% dplyr::filter(Timepoint %in% c("Before", "After"))
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
-#colnames(x)
-
 TheIntermediate <- TheColumns[!str_detect(TheColumns, "Gain")]
 TheColumnNames <- TheIntermediate[str_detect(TheIntermediate, "-A")]
   
@@ -588,6 +716,14 @@ VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+ScatterGains <- TheIntermediate[str_detect(TheIntermediate, "SC-")]
+ScatterGains <- ScalePriority(ScatterGains)
+LaserGains <- TheIntermediate[str_detect(TheIntermediate, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheIntermediate[str_detect(TheIntermediate, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
 
 UltraVioletPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=UltraVioletGains,
                       plotType = "comparison", returntype = "plots",
@@ -606,6 +742,10 @@ YellowGreenPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=YellowGree
                       Metadata="Timepoint", strict = TRUE)
 
 RedPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "comparison", returntype = "plots",
+                     Metadata="Timepoint", strict = TRUE)
+
+OtherPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "comparison", returntype = "plots",
                      Metadata="Timepoint", strict = TRUE)
 ```
@@ -697,6 +837,22 @@ ggplotly(RedPlotsGain[[7]])
 ggplotly(RedPlotsGain[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsGain[[1]])
+ggplotly(OtherPlotsGain[[2]])
+ggplotly(OtherPlotsGain[[3]])
+ggplotly(OtherPlotsGain[[4]])
+ggplotly(OtherPlotsGain[[5]])
+ggplotly(OtherPlotsGain[[6]])
+ggplotly(OtherPlotsGain[[7]])
+ggplotly(OtherPlotsGain[[8]])
+ggplotly(OtherPlotsGain[[9]])
+ggplotly(OtherPlotsGain[[10]])
+ggplotly(OtherPlotsGain[[11]])
+ggplotly(OtherPlotsGain[[12]])
+```
+
 ::: {.card title="Gain"}
 :::
 
@@ -786,6 +942,26 @@ ggplotly(RedPlotsMFI[[7]])
 ggplotly(RedPlotsMFI[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsMFI[[1]])
+ggplotly(OtherPlotsMFI[[2]])
+ggplotly(OtherPlotsMFI[[3]])
+ggplotly(OtherPlotsMFI[[4]])
+ggplotly(OtherPlotsMFI[[5]])
+ggplotly(OtherPlotsMFI[[6]])
+ggplotly(OtherPlotsMFI[[7]])
+ggplotly(OtherPlotsMFI[[8]]) 
+ggplotly(OtherPlotsMFI[[9]]) 
+ggplotly(OtherPlotsMFI[[10]])
+ggplotly(OtherPlotsMFI[[11]])
+ggplotly(OtherPlotsMFI[[12]])
+ggplotly(OtherPlotsMFI[[13]])
+ggplotly(OtherPlotsMFI[[14]])
+ggplotly(OtherPlotsMFI[[15]])
+ggplotly(OtherPlotsMFI[[16]])
+```
+
 ::: {.card title="MFI"}
 :::
 
@@ -796,19 +972,26 @@ ggplotly(RedPlotsMFI[[8]])
 x <- Gain_CS
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
 TheColumnNames <- TheColumns[str_detect(TheColumns, "Gain")]
+
 UltraVioletGains <- TheColumnNames[str_detect(TheColumnNames, "^UV")]
 VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
 
+ScatterGains <- TheColumnNames[str_detect(TheColumnNames, "SC-")]
+LaserGains <- TheColumns[str_detect(TheColumns, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheColumns[str_detect(TheColumns, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
+
 UltraVioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=UltraVioletGains,
                       plotType = "individual", returntype = "plots")
 
 VioletPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=VioletGains,
-                      plotType = "individual", returntype = "plots")
+                      plotType = "individual", returntype = "plots", strict = TRUE)
 
 BluePlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=BlueGains,
                       plotType = "individual", returntype = "plots")
@@ -817,6 +1000,9 @@ YellowGreenPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=YellowGre
                       plotType = "individual", returntype = "plots")
 
 RedPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "individual", returntype = "plots")
+
+OtherPlotsGain <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "individual", returntype = "plots")
 ```
 
@@ -854,9 +1040,6 @@ x <- MFI_CS
 x <- x %>% dplyr::filter(Timepoint %in% c("Before", "After"))
 TheColumns <- x %>% select(where(~is.numeric(.)||is.integer(.))) %>% colnames()
 TheColumns <- setdiff(TheColumns, "TIME")
-
-#colnames(x)
-
 TheIntermediate <- TheColumns[!str_detect(TheColumns, "Gain")]
 TheColumnNames <- TheIntermediate[str_detect(TheIntermediate, "-A")]
   
@@ -865,6 +1048,14 @@ VioletGains <- TheColumnNames[str_detect(TheColumnNames, "^V")]
 BlueGains <- TheColumnNames[str_detect(TheColumnNames, "^B")]
 YellowGreenGains <- TheColumnNames[str_detect(TheColumnNames, "^YG")]
 RedGains <- TheColumnNames[str_detect(TheColumnNames, "^R")]
+
+ScatterGains <- TheIntermediate[str_detect(TheIntermediate, "SC-")]
+ScatterGains <- ScalePriority(ScatterGains)
+LaserGains <- TheIntermediate[str_detect(TheIntermediate, "Laser")]
+LaserGains <- ColorPriority(LaserGains)
+ScalingGains <- TheIntermediate[str_detect(TheIntermediate, "Scaling")]
+ScalingGains <- ColorPriority(ScalingGains)
+OtherGains <- c(ScatterGains, LaserGains, ScalingGains)
 
 UltraVioletPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=UltraVioletGains,
                       plotType = "comparison", returntype = "plots",
@@ -883,6 +1074,10 @@ YellowGreenPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=YellowGree
                       Metadata="Timepoint", strict = TRUE)
 
 RedPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=RedGains,
+                     plotType = "comparison", returntype = "plots",
+                     Metadata="Timepoint", strict = TRUE)
+
+OtherPlotsMFI <- QC_Plots(x=x, FailedFlag=TRUE, MeasurementType=OtherGains,
                      plotType = "comparison", returntype = "plots",
                      Metadata="Timepoint", strict = TRUE)
 ```
@@ -974,6 +1169,22 @@ ggplotly(RedPlotsGain[[7]])
 ggplotly(RedPlotsGain[[8]])
 ```
 
+```{r}
+#| title: Other
+ggplotly(OtherPlotsGain[[1]])
+ggplotly(OtherPlotsGain[[2]])
+ggplotly(OtherPlotsGain[[3]])
+ggplotly(OtherPlotsGain[[4]])
+ggplotly(OtherPlotsGain[[5]])
+ggplotly(OtherPlotsGain[[6]])
+ggplotly(OtherPlotsGain[[7]])
+ggplotly(OtherPlotsGain[[8]])
+ggplotly(OtherPlotsGain[[9]])
+ggplotly(OtherPlotsGain[[10]])
+ggplotly(OtherPlotsGain[[11]])
+ggplotly(OtherPlotsGain[[12]])
+```
+
 ::: {.card title="Gain"}
 :::
 
@@ -1061,6 +1272,26 @@ ggplotly(RedPlotsMFI[[5]])
 ggplotly(RedPlotsMFI[[6]])
 ggplotly(RedPlotsMFI[[7]])
 ggplotly(RedPlotsMFI[[8]])
+```
+
+```{r}
+#| title: Other
+ggplotly(OtherPlotsMFI[[1]])
+ggplotly(OtherPlotsMFI[[2]])
+ggplotly(OtherPlotsMFI[[3]])
+ggplotly(OtherPlotsMFI[[4]])
+ggplotly(OtherPlotsMFI[[5]])
+ggplotly(OtherPlotsMFI[[6]])
+ggplotly(OtherPlotsMFI[[7]])
+ggplotly(OtherPlotsMFI[[8]]) 
+ggplotly(OtherPlotsMFI[[9]]) 
+ggplotly(OtherPlotsMFI[[10]])
+ggplotly(OtherPlotsMFI[[11]])
+ggplotly(OtherPlotsMFI[[12]])
+ggplotly(OtherPlotsMFI[[13]])
+ggplotly(OtherPlotsMFI[[14]])
+ggplotly(OtherPlotsMFI[[15]])
+ggplotly(OtherPlotsMFI[[16]])
 ```
 
 ::: {.card title="MFI"}
