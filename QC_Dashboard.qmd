@@ -39,10 +39,14 @@ CurrentData <- function(x, MainFolder, type){
   }
   
   if (type == "Gain"){
-  ArchiveData <- list.files(ArchiveLocation, pattern="Archive",
+  ArchiveData <- list.files(ArchiveLocation, pattern="Archived",
                          full.names=TRUE)
   Data <- read.csv(ArchiveData, check.names=FALSE)
-  Data$DateTime <- lubridate::ymd_hms(Data$DateTime)
+  #lubridate::ymd_hms(Data$DateTime)
+  
+  if (any(str_detect(Data$DateTime, ":.*:"))){
+   Data$DateTime <- lubridate::ymd_hms(Data$DateTime) 
+  } else {Data$DateTime <- lubridate::mdy_hm(Data$DateTime)}
   }
   
   Data <- Data %>% arrange(desc(DateTime))
@@ -84,8 +88,7 @@ Gain_CS <- CurrentData(x="CS", MainFolder=MainFolder, type = "Gain")
 ```
 
 ```{r}
-#| eval: false
-WindowOfInterest <- Sys.time() - months(12)
+WindowOfInterest <- Sys.time() - months(6)
 
 MFI_3L <- MFI_3L %>% filter(DateTime >= WindowOfInterest)
 Gain_3L <- Gain_3L %>% filter(DateTime >= WindowOfInterest)
