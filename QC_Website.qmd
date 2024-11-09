@@ -4,6 +4,7 @@ This chunk blow corresponds to the testing ground for the visualized summary lan
 
 ```{r}
 library(tidyr)
+library(purrr)
 
 TheList <- c("3L", "4L", "5L", "CS")
 TheFrames <- list(Gain_3L, Gain_4L, Gain_5L, Gain_CS)
@@ -23,32 +24,61 @@ VisualQCSummary <- function(x, y){
   rCV <- Flags %>% select(contains("rCV"))
   TherCV <- colnames(rCV)
   
-  TheGainData <- y %>% select(all_of(TheGains))
+  TheGainData <- Data %>% select(all_of(c("DateTime", TheGains)))
   colnames(Gains) <- gsub("-Gain", "", fixed=TRUE, colnames(Gains))
   colnames(TheGainData) <- gsub("-Gain", "", fixed=TRUE, colnames(TheGainData))
   
-  TheGainData <- TheGainData %>% pivot_longer(everything(), names_to = "Detector", values_to = "Gain")
+  TheGainData <- TheGainData %>%
+    pivot_longer(!DateTime, names_to = "Detector", values_to = "Gain")
   
-  Gains <- Gains %>% pivot_longer(everything(), names_to = "Detector", values_to = "Gain_Logical")
+  Gains <- Gains %>% mutate(DateTime=Data$DateTime) %>% relocate(DateTime, .before=1)
   
-  TherCVData <- y %>% select(all_of(TherCV))
+  Gains <- Gains %>%
+    pivot_longer(!DateTime, names_to = "Detector", values_to = "Gain_Logical")
+  
+  TherCVData <- Data %>% select(all_of(c("DateTime", TherCV)))
   colnames(rCV) <- gsub("-% rCV", "", fixed=TRUE, colnames(rCV))
   colnames(TherCVData) <- gsub("-% rCV", "", fixed=TRUE, colnames(TherCVData))
   
-  TherCVData <- TherCVData %>% pivot_longer(everything(), names_to = "Detector", values_to = "rCV")
+  TherCVData <- TherCVData %>% pivot_longer(!DateTime, names_to = "Detector", values_to = "rCV")
   
-  rCV <- rCV %>% pivot_longer(everything(), names_to = "Detector", values_to = "rCV_Logical")
+  rCV <- rCV %>% mutate(DateTime=Data$DateTime) %>% relocate(DateTime, .before=1)
+  
+  rCV <- rCV %>% pivot_longer(!DateTime, names_to = "Detector", values_to = "rCV_Logical")
 
-  Tidy <- TheGainData %>% left_join(Gains, .by="Detector") %>%
-    left_join(TherCVData, .by="Detector") %>% left_join(rCV, .by="Detector")
+  Tidy <- TheGainData %>%
+    left_join(Gains, by = c("Detector", "DateTime")) %>%
+    left_join(TherCVData, by = c("Detector", "DateTime")) %>%
+    left_join(rCV, by = c("Detector", "DateTime"))
+  
+  TheDetectors <- Tidy %>% pull(Detector) %>% unique()
+  
+  Summary <- map(.x=TheDetectors, .f=QCSummaryCheck, data=Tidy) %>% bind_rows()
   
   
 }
 
+x <- TheDetectors[2]
+data <- Tidy
 
-
-Gain_3L
-
+QCSummaryCheck <- function(x, data){
+  Subset <- data %>% dplyr::filter(Detector %in% x)
+  
+  if (any(Subset$Gain_Logical == TRUE)){
+    Followup <- Subset %>% slice(1) %>% pull(Gain_Logical)
+    if (Followup == TRUE){GainValue <- "Red"
+    } else {GainValue <- "Orange"}
+  } else {GainValue <- "Green"}
+  
+    if (any(Subset$rCV_Logical == TRUE)){
+    Followup <- Subset %>% slice(1) %>% pull(rCV_Logical)
+    if (Followup == TRUE){rCVValue <- "Red"
+    } else {rCVValue <- "Orange"}
+    } else {rCVValue <- "Green"}
+  
+  Summary <- data.frame(Detector=x, Gain=GainValue, rCV=rCVValue)
+  return(Summary)
+}
 
 ```
 
