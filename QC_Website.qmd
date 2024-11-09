@@ -6,17 +6,11 @@ This chunk blow corresponds to the testing ground for the visualized summary lan
 library(tidyr)
 library(purrr)
 
-TheList <- c("3L", "4L", "5L", "CS")
-TheFrames <- list(Gain_3L, Gain_4L, Gain_5L, Gain_CS)
-
-x <- TheList[1]
-y <- TheFrames[1]
-
-VisualQCSummary <- function(x, y){
+VisualQCSummary <- function(x){
   WindowOfInterest <- Sys.time() - weeks(1) 
   
-  y <- y[[1]]
-  Data <- y %>% filter(DateTime > WindowOfInterest)
+  #x <- x[[1]]
+  Data <- x %>% filter(DateTime > WindowOfInterest)
   Flags <- Data %>% select(starts_with("Flag")) 
   colnames(Flags) <- gsub("Flag-", "", colnames(Flags))
   Gains <- Flags %>% select(contains("Gain"))
@@ -54,12 +48,8 @@ VisualQCSummary <- function(x, y){
   TheDetectors <- Tidy %>% pull(Detector) %>% unique()
   
   Summary <- map(.x=TheDetectors, .f=QCSummaryCheck, data=Tidy) %>% bind_rows()
-  
-  
+  return(Summary)
 }
-
-x <- TheDetectors[2]
-data <- Tidy
 
 QCSummaryCheck <- function(x, data){
   Subset <- data %>% dplyr::filter(Detector %in% x)
@@ -80,6 +70,32 @@ QCSummaryCheck <- function(x, data){
   return(Summary)
 }
 
+ColorCodeStatus <- function(x, y){
+  #x <- x[[1]]
+  data <- y[[1]]
+  if (any(data$Gain == "Red") || any(data$rCV == "Red")) {
+    ColorCode <- "Red"
+  } else if (any(data$Gain == "Orange") || any(data$rCV == "Orange")) {
+    ColorCode <- "Orange"
+  } else {ColorCode <- "Green"}
+  
+  QCResults <- data.frame(Instrument = x, QCStatus=ColorCode)
+  return(QCResults)
+}
+```
+
+```{r}
+The3L <- VisualQCSummary(x=Gain_3L)
+The4L <- VisualQCSummary(x=Gain_4L)
+The5L <- VisualQCSummary(x=Gain_5L)
+TheCS <- VisualQCSummary(x=Gain_CS)
+```
+
+```{r}
+InstrumentNames <- c("3L", "4L", "5L", "CS")
+Instruments <- list(The3L, The4L, The5L, TheCS)
+
+map(.x=InstrumentNames[1], .f=ColorCodeStatus, y=Instruments[1]) %>% bind_rows()
 ```
 
 
