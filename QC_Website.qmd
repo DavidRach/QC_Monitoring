@@ -3,99 +3,51 @@ This document was the original testing ground for all things QC dashboard.
 This chunk blow corresponds to the testing ground for the visualized summary landing page
 
 ```{r}
-library(tidyr)
-library(purrr)
+library(Luciernaga)
 
-VisualQCSummary <- function(x){
-  WindowOfInterest <- Sys.time() - weeks(1) 
-  
-  #x <- x[[1]]
-  Data <- x %>% filter(DateTime > WindowOfInterest)
-  Flags <- Data %>% select(starts_with("Flag")) 
-  colnames(Flags) <- gsub("Flag-", "", colnames(Flags))
-  Gains <- Flags %>% select(contains("Gain"))
-  TheGains <- colnames(Gains)
-  rCV <- Flags %>% select(contains("rCV"))
-  TherCV <- colnames(rCV)
-  
-  TheGainData <- Data %>% select(all_of(c("DateTime", TheGains)))
-  colnames(Gains) <- gsub("-Gain", "", fixed=TRUE, colnames(Gains))
-  colnames(TheGainData) <- gsub("-Gain", "", fixed=TRUE, colnames(TheGainData))
-  
-  TheGainData <- TheGainData %>%
-    pivot_longer(!DateTime, names_to = "Detector", values_to = "Gain")
-  
-  Gains <- Gains %>% mutate(DateTime=Data$DateTime) %>% relocate(DateTime, .before=1)
-  
-  Gains <- Gains %>%
-    pivot_longer(!DateTime, names_to = "Detector", values_to = "Gain_Logical")
-  
-  TherCVData <- Data %>% select(all_of(c("DateTime", TherCV)))
-  colnames(rCV) <- gsub("-% rCV", "", fixed=TRUE, colnames(rCV))
-  colnames(TherCVData) <- gsub("-% rCV", "", fixed=TRUE, colnames(TherCVData))
-  
-  TherCVData <- TherCVData %>% pivot_longer(!DateTime, names_to = "Detector", values_to = "rCV")
-  
-  rCV <- rCV %>% mutate(DateTime=Data$DateTime) %>% relocate(DateTime, .before=1)
-  
-  rCV <- rCV %>% pivot_longer(!DateTime, names_to = "Detector", values_to = "rCV_Logical")
+Computer <- file.path("C:", "Users", "12692", "Desktop")
+MainFolder <- file.path(Computer, "QC_Website")
+```
 
-  Tidy <- TheGainData %>%
-    left_join(Gains, by = c("Detector", "DateTime")) %>%
-    left_join(TherCVData, by = c("Detector", "DateTime")) %>%
-    left_join(rCV, by = c("Detector", "DateTime"))
-  
-  TheDetectors <- Tidy %>% pull(Detector) %>% unique()
-  
-  Summary <- map(.x=TheDetectors, .f=QCSummaryCheck, data=Tidy) %>% bind_rows()
-  return(Summary)
-}
+```{r}
+MFI_3L <- Luciernaga:::CurrentData(x="3L", MainFolder=MainFolder, type = "MFI")
+Gain_3L <- Luciernaga:::CurrentData(x="3L", MainFolder=MainFolder, type = "Gain")
 
-QCSummaryCheck <- function(x, data){
-  Subset <- data %>% dplyr::filter(Detector %in% x)
-  
-  if (any(Subset$Gain_Logical == TRUE)){
-    Followup <- Subset %>% slice(1) %>% pull(Gain_Logical)
-    if (Followup == TRUE){GainValue <- "Red"
-    } else {GainValue <- "Orange"}
-  } else {GainValue <- "Green"}
-  
-    if (any(Subset$rCV_Logical == TRUE)){
-    Followup <- Subset %>% slice(1) %>% pull(rCV_Logical)
-    if (Followup == TRUE){rCVValue <- "Red"
-    } else {rCVValue <- "Orange"}
-    } else {rCVValue <- "Green"}
-  
-  Summary <- data.frame(Detector=x, Gain=GainValue, rCV=rCVValue)
-  return(Summary)
-}
+MFI_4L <- Luciernaga:::CurrentData(x="4L", MainFolder=MainFolder, type = "MFI")
+Gain_4L <- Luciernaga:::CurrentData(x="4L", MainFolder=MainFolder, type = "Gain")
 
+MFI_5L <- Luciernaga:::CurrentData(x="5L", MainFolder=MainFolder, type = "MFI")
+Gain_5L <- Luciernaga:::CurrentData(x="5L", MainFolder=MainFolder, type = "Gain")
+
+MFI_CS <- Luciernaga:::CurrentData(x="CS", MainFolder=MainFolder, type = "MFI")
+Gain_CS <- Luciernaga:::CurrentData(x="CS", MainFolder=MainFolder, type = "Gain")
+```
+
+```{r}
+The3L <- Luciernaga:::VisualQCSummary(x=Gain_3L)
+The4L <- Luciernaga:::VisualQCSummary(x=Gain_4L)
+The5L <- Luciernaga:::VisualQCSummary(x=Gain_5L)
+TheCS <- Luciernaga:::VisualQCSummary(x=Gain_CS)
+```
+
+```{r}
 ColorCodeStatus <- function(x, y){
-  #x <- x[[1]]
-  data <- y[[1]]
+  data <- y
   if (any(data$Gain == "Red") || any(data$rCV == "Red")) {
     ColorCode <- "Red"
   } else if (any(data$Gain == "Orange") || any(data$rCV == "Orange")) {
     ColorCode <- "Orange"
   } else {ColorCode <- "Green"}
-  
+
   QCResults <- data.frame(Instrument = x, QCStatus=ColorCode)
   return(QCResults)
 }
-```
 
-```{r}
-The3L <- VisualQCSummary(x=Gain_3L)
-The4L <- VisualQCSummary(x=Gain_4L)
-The5L <- VisualQCSummary(x=Gain_5L)
-TheCS <- VisualQCSummary(x=Gain_CS)
-```
-
-```{r}
 InstrumentNames <- c("3L", "4L", "5L", "CS")
 Instruments <- list(The3L, The4L, The5L, TheCS)
 
-map(.x=InstrumentNames[1], .f=ColorCodeStatus, y=Instruments[1]) %>% bind_rows()
+map2(.x=InstrumentNames, .f=Luciernaga:::ColorCodeStatus, .y=Instruments) %>% bind_rows()
+
 ```
 
 
@@ -119,7 +71,7 @@ library(lubridate)
 ```{r}
 Computer <- file.path("C:", "Users", "12692", "Desktop")
 MainFolder <- file.path(Computer, "QC_Website")
-list.files(MainFolder)
+#list.files(MainFolder)
 ```
 
 ```{r}
