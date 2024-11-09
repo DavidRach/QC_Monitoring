@@ -1,0 +1,122 @@
+---
+title: "UMGCC FlowCore"
+author: "Instrumental QC"
+format:
+  dashboard:
+    logo: images/hex.png
+    orientation: columns
+    nav-buttons:
+      - icon: github
+        href: https://github.com/DavidRach/QC_Monitoring
+        aria-label: GitHub
+---
+
+```{r}
+#| message: FALSE
+library(dplyr)
+library(purrr)
+library(Luciernaga)
+library(gt)
+
+Computer <- file.path("C:", "Users", "12692", "Desktop")
+MainFolder <- file.path(Computer, "QC_Website")
+TheList <- c("3L", "4L", "5L", "CS")
+#UpdateTheDataset <- source("QC_UpdateData.R")
+```
+
+```{r}
+MFI_3L <- Luciernaga:::CurrentData(x="3L", MainFolder=MainFolder, type = "MFI")
+Gain_3L <- Luciernaga:::CurrentData(x="3L", MainFolder=MainFolder, type = "Gain")
+
+MFI_4L <- Luciernaga:::CurrentData(x="4L", MainFolder=MainFolder, type = "MFI")
+Gain_4L <- Luciernaga:::CurrentData(x="4L", MainFolder=MainFolder, type = "Gain")
+
+MFI_5L <- Luciernaga:::CurrentData(x="5L", MainFolder=MainFolder, type = "MFI")
+Gain_5L <- Luciernaga:::CurrentData(x="5L", MainFolder=MainFolder, type = "Gain")
+
+MFI_CS <- Luciernaga:::CurrentData(x="CS", MainFolder=MainFolder, type = "MFI")
+Gain_CS <- Luciernaga:::CurrentData(x="CS", MainFolder=MainFolder, type = "Gain")
+```
+
+```{r}
+The3L <- Luciernaga:::VisualQCSummary(x=Gain_3L)
+The4L <- Luciernaga:::VisualQCSummary(x=Gain_4L)
+The5L <- Luciernaga:::VisualQCSummary(x=Gain_5L)
+TheCS <- Luciernaga:::VisualQCSummary(x=Gain_CS)
+```
+
+```{r}
+Table3L <- Luciernaga:::SmallTable(data=The3L)
+Table4L <- Luciernaga:::SmallTable(data=The4L)
+Table5L <- Luciernaga:::SmallTable(data=The5L)
+TableCS <- Luciernaga:::SmallTable(data=TheCS)
+```
+
+```{r}
+InstrumentNames <- c("3L", "4L", "5L", "CS")
+Instruments <- list(The3L, The4L, The5L, TheCS)
+
+InstrumentStatus <- map2(.x=InstrumentNames, .f=Luciernaga:::ColorCodeStatus, .y=Instruments) %>% bind_rows()
+```
+
+# Home
+
+## {.sidebar}
+
+Created and Maintained by David Rach
+
+## First {width="66%"}
+
+### Row
+
+#### Column
+
+::: {.card title="3L"}
+Hi
+:::
+
+#### Column
+
+::: {.card title="4L"}
+Hi 2
+:::
+
+### Row
+
+#### Column
+
+::: {.card title="5L"}
+Hi 3
+:::
+
+#### Column
+
+::: {.card title="CS"}
+Hi 4
+:::
+
+
+## Second {.tabset width="33%" scrolling=TRUE}
+```{r}
+#| title: 3L
+Table3L
+```
+
+```{r}
+#| title: 4L
+Table4L
+```
+
+```{r}
+#| title: 5L
+Table5L
+```
+
+```{r}
+#| title: CS
+TableCS
+```
+
+
+
+

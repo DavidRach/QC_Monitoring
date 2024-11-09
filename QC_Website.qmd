@@ -31,23 +31,13 @@ TheCS <- Luciernaga:::VisualQCSummary(x=Gain_CS)
 ```
 
 ```{r}
-ColorCodeStatus <- function(x, y){
-  data <- y
-  if (any(data$Gain == "Red") || any(data$rCV == "Red")) {
-    ColorCode <- "Red"
-  } else if (any(data$Gain == "Orange") || any(data$rCV == "Orange")) {
-    ColorCode <- "Orange"
-  } else {ColorCode <- "Green"}
-
-  QCResults <- data.frame(Instrument = x, QCStatus=ColorCode)
-  return(QCResults)
-}
-
 InstrumentNames <- c("3L", "4L", "5L", "CS")
 Instruments <- list(The3L, The4L, The5L, TheCS)
 
-map2(.x=InstrumentNames, .f=Luciernaga:::ColorCodeStatus, .y=Instruments) %>% bind_rows()
+InstrumentStatus <- map2(.x=InstrumentNames, .f=Luciernaga:::ColorCodeStatus, .y=Instruments) %>% bind_rows()
 
+x <- "3L"
+data <- InstrumentStatus
 ```
 
 
