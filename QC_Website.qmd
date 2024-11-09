@@ -1,4 +1,60 @@
-This document was the original testing ground. The R code below has been copied to QC_UpdateData.R to be used in the dashboard as part of a Source call. 
+This document was the original testing ground for all things QC dashboard.  
+
+This chunk blow corresponds to the testing ground for the visualized summary landing page
+
+```{r}
+library(tidyr)
+
+TheList <- c("3L", "4L", "5L", "CS")
+TheFrames <- list(Gain_3L, Gain_4L, Gain_5L, Gain_CS)
+
+x <- TheList[1]
+y <- TheFrames[1]
+
+VisualQCSummary <- function(x, y){
+  WindowOfInterest <- Sys.time() - weeks(1) 
+  
+  y <- y[[1]]
+  Data <- y %>% filter(DateTime > WindowOfInterest)
+  Flags <- Data %>% select(starts_with("Flag")) 
+  colnames(Flags) <- gsub("Flag-", "", colnames(Flags))
+  Gains <- Flags %>% select(contains("Gain"))
+  TheGains <- colnames(Gains)
+  rCV <- Flags %>% select(contains("rCV"))
+  TherCV <- colnames(rCV)
+  
+  TheGainData <- y %>% select(all_of(TheGains))
+  colnames(Gains) <- gsub("-Gain", "", fixed=TRUE, colnames(Gains))
+  colnames(TheGainData) <- gsub("-Gain", "", fixed=TRUE, colnames(TheGainData))
+  
+  TheGainData <- TheGainData %>% pivot_longer(everything(), names_to = "Detector", values_to = "Gain")
+  
+  Gains <- Gains %>% pivot_longer(everything(), names_to = "Detector", values_to = "Gain_Logical")
+  
+  TherCVData <- y %>% select(all_of(TherCV))
+  colnames(rCV) <- gsub("-% rCV", "", fixed=TRUE, colnames(rCV))
+  colnames(TherCVData) <- gsub("-% rCV", "", fixed=TRUE, colnames(TherCVData))
+  
+  TherCVData <- TherCVData %>% pivot_longer(everything(), names_to = "Detector", values_to = "rCV")
+  
+  rCV <- rCV %>% pivot_longer(everything(), names_to = "Detector", values_to = "rCV_Logical")
+
+  Tidy <- TheGainData %>% left_join(Gains, .by="Detector") %>%
+    left_join(TherCVData, .by="Detector") %>% left_join(rCV, .by="Detector")
+  
+  
+}
+
+
+
+Gain_3L
+
+
+```
+
+
+
+The R code below has been copied to QC_UpdateData.R to be used in the dashboard as part of a Source call. 
 
 ```{r}
 #| message: FALSE
